@@ -9,7 +9,7 @@
   },
   "author": {
     "name": "nevet",
-    "email": "nevets.st@gmail.com",
+    "email": "nevets.st@gmail.com"
   },
   "main": "main.js",
   "keywords": [
@@ -17,8 +17,8 @@
     "Scraper",
     "DieNow"
   ],
-  "devDependencies": {
-    "fs": "matthewp/fs",
+  "dependencies": {
+    "fs": ">=0.0.2",
     "mkdirp": "substack/node-mkdirp",
     "cheerio": "cheeriojs/cheerio",
     "request": "request/request",
