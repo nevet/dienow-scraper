@@ -18,6 +18,11 @@
     "DieNow"
   ],
   "devDependencies": {
+    "fs": "matthewp/fs",
+    "mkdirp": "substack/node-mkdirp",
+    "cheerio": "cheeriojs/cheerio",
+    "request": "request/request",
+    "zombie": "assaf/zombie"
   },
   "license": "MIT"
 }
