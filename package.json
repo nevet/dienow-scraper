@@ -1,0 +1,23 @@
+{
+  "name": "dienow-scraper",
+  "version": "0.0.0",
+  "description": "downloads dienow comic to local storage",
+  "homepage": "https://github.com/nevet/dienow-scraper",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nevet/dienow-scraper.git"
+  },
+  "author": {
+    "name": "nevet",
+    "email": "nevets.st@gmail.com",
+  },
+  "main": "main.js",
+  "keywords": [
+    "U17_Comic",
+    "Scraper",
+    "DieNow"
+  ],
+  "devDependencies": {
+  },
+  "license": "MIT"
+}
