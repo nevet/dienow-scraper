@@ -22,7 +22,7 @@
     "mkdirp": "substack/node-mkdirp",
     "cheerio": "cheeriojs/cheerio",
     "request": "request/request",
-    "zombie": "assaf/zombie"
+    "zombie": "~2.0.0"
   },
   "license": "MIT"
 }
