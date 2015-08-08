@@ -11,20 +11,60 @@ var request = require("request");
 var cheerio = require("cheerio");
 // ==========================End Dependencies===================================
 
-// target url
-var url = 'http://';
+var url = 'http://www.u17.com/comic/';
+var comicSN = 13707;
+var completeUrl = makeUrl(url, comicSN);
 
-// local storage
-var dir = './images';
+var rootDir = ".";
+var dir;
 
-// make dir
-mkdirp(dir, function(err) {
+// ===========================Helper Functions==================================
+function makeUrl(url, comic) {
+  return url + comic + ".html";
+}
+
+function makeDir(root, title) {
+  dir = rootDir + title;
+
+  mkdirp(dir, function(err) {
     if(err){
-        console.log(err);
+      console.log(err);
     }
-});
+  });
 
-// helper functions
+  return dir
+}
+// =======================End Helper Functions==================================
+
+// ================================Main=========================================
+console.log("Crawling started...");
+
+request(completeUrl, function (error, response, body) {
+  if (!error && response.statusCode == 200) {
+    console.log("Comic received, started analyzing...");
+
+    // pipe the body to cheerio
+    var $ = cheerio.load(body);
+    var comicTitle = $("div.comic_info h1.fl").text().trim();
+
+    console.log("Comic Title: " + comicTitle);
+
+    makeDir(rootDir + "/comic", comicTitle);
+
+    console.log("Root folder created...");
+
+    $("div.chapterlist_box li a").each(function () {
+      var chapterTitle = $(this).attr("title");
+      
+      // makeDir(dir, chapterTitle);
+      console.log(chapterTitle);
+    })
+  }
+})
+// ==============================End Main=======================================
+
+
+/*
 var download = function(url, dir, filename){
     request.head(url, function(err, res, body){
         request(url).pipe(fs.createWriteStream(dir + "/" + filename));
@@ -42,4 +82,4 @@ request(url, function(error, response, body) {
             console.log('下载完成');
         });
     }
-});
+});*/
