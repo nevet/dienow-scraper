@@ -4,7 +4,7 @@ var fs = require('fs');
 var mkdirp = require('mkdirp');
 
 // dynamic scraper
-var zombie = require('zombie');
+var Browser = require('zombie');
 
 // static html process
 var request = require("request");
@@ -15,16 +15,59 @@ var url = 'http://www.u17.com/comic/';
 var comicSN = 13707;
 var completeUrl = makeUrl(url, comicSN);
 
-var rootDir = ".";
+var rootDir = "./";
 var dir;
 
 // ===========================Helper Functions==================================
+function auto(page) {
+  var counter = 0;
+  var timer = setInterval(function () {
+    next();
+    counter ++;
+
+    if (counter >= page) {
+      closeInterval(timer);
+    }
+  }, 3000);
+}
+
+function crawlChapter(obj, parentFolder) {
+  // skip vip
+  if (obj.hasClass("vip_chapter")) return;
+
+  title = obj.attr("title");
+  chapterLink = obj.attr("href");
+
+  var curFolder = makeDir(parentFolder, title);
+
+  console.log("Crawling " + title);
+  console.log("href = " + chapterLink);
+
+  var comic = new Browser();
+
+  comic.visit(chapterLink, function () {
+    console.log(comic.query("div"));
+    comic.query("#image_trigger").click();
+    
+    setTimeout(function () {
+      console.log(comic.resources);
+    }, 1000);
+  })
+}
+
+function getPageCount($) {
+  var regex = /\/(\d+)/g;
+  var matches = regex.exec($(".pagenum").text());
+
+  return matches[1];
+}
+
 function makeUrl(url, comic) {
   return url + comic + ".html";
 }
 
 function makeDir(root, title) {
-  dir = rootDir + title;
+  dir = root + "/" + title;
 
   mkdirp(dir, function(err) {
     if(err){
@@ -32,7 +75,11 @@ function makeDir(root, title) {
     }
   });
 
-  return dir
+  return dir;
+}
+
+function next($) {
+  $("#image_trigger").click();
 }
 // =======================End Helper Functions==================================
 
@@ -49,16 +96,14 @@ request(completeUrl, function (error, response, body) {
 
     console.log("Comic Title: " + comicTitle);
 
-    makeDir(rootDir + "/comic", comicTitle);
+    var curRoot = makeDir(rootDir + "comic", comicTitle);
 
     console.log("Root folder created...");
 
-    $("div.chapterlist_box li a").each(function () {
-      var chapterTitle = $(this).attr("title");
-      
-      // makeDir(dir, chapterTitle);
-      console.log(chapterTitle);
-    })
+    // $("div.chapterlist_box li a").each(function () {
+    //   crawlChapter($(this), curRoot);
+    // })
+    crawlChapter($($("div.chapterlist_box li a")[0]), curRoot);
   }
 })
 // ==============================End Main=======================================
