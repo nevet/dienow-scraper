@@ -1,4 +1,14 @@
-var casper = require ("casper").create();
+var casper = require ("casper").create({
+  clientScripts:  [
+    'include/jquery.js'
+  ],
+  pageSettings: {
+    loadImages:  false,
+    loadPlugins: false
+  },
+  verbose: true
+});
+
 var comicNumber = 13707;
 var url = "http://www.u17.com/comic/" + comicNumber + ".html";
 
@@ -10,7 +20,7 @@ function endsWith(str, suffix) {
 }
 
 function findChapters() {
-  var links = document.querySelectorAll('div.chapterlist_box li a');
+  var links = $('div.chapterlist_box li a');
 
   return Array.prototype.map.call(links, function(e) {
       return e.getAttribute("href");
@@ -18,7 +28,7 @@ function findChapters() {
 }
 
 function findInitialPages() {
-  var links = document.querySelectorAll("img[id^='cur_img_']");
+  var links = $("img[id^='cur_img_']");
 
   return Array.prototype.map.call(links, function(e) {
       return e.getAttribute("data-src");
@@ -32,8 +42,6 @@ casper.on('resource.received', function(resource) {
 });
 
 casper.start(url);
-
-casper.echo("Connecting server...");
 
 casper.then(function () {
   this.echo("Connected! Current Url = " + this.getCurrentUrl());
@@ -49,8 +57,10 @@ casper.then(function () {
 casper.then(function () {
   this.each(chapters, function (self, chapter) {
     self.thenOpen(chapter, function () {
+      var chapterName = this.fetchText("#current_chapter_name");
+
       this.echo("Now processing " + this.getCurrentUrl());
-      this.echo("Chapter Name: " + this.fetchText("#current_chapter_name"));
+      this.echo("Chapter Name: " + chapterName);
 
       if (this.exists("#image_trigger")) {
         var regex = /\/(\d+)/g;
@@ -62,8 +72,19 @@ casper.then(function () {
           this.echo("Start downloading...");
 
           pages = this.evaluate(findInitialPages);
+          var counter = 1;
 
-          this.echo(' - ' + pages.join('\n - '));
+          this.each(pages, function (self, page) {
+            self.echo("Downloading " + page);
+            self.thenOpen("http://localhost:8080", {
+              method: "post",
+              data: {
+                "chapter": chapterName,
+                "page": counter++,
+                "url": page
+              }
+            });
+          });
         } else {
           this.echo("Can NOT download!");
         }
