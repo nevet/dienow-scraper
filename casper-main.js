@@ -3,6 +3,7 @@ var comicNumber = 13707;
 var url = "http://www.u17.com/comic/" + comicNumber + ".html";
 
 var chapters = [];
+var pages = [];
 
 function endsWith(str, suffix) {
   return str.indexOf(suffix, str.length - suffix.length) !== -1;
@@ -12,7 +13,15 @@ function findChapters() {
   var links = document.querySelectorAll('div.chapterlist_box li a');
 
   return Array.prototype.map.call(links, function(e) {
-      return e.getAttribute('href');
+      return e.getAttribute("href");
+  });
+}
+
+function findInitialPages() {
+  var links = document.querySelectorAll("img[id^='cur_img_']");
+
+  return Array.prototype.map.call(links, function(e) {
+      return e.getAttribute("data-src");
   });
 }
 
@@ -24,8 +33,10 @@ casper.on('resource.received', function(resource) {
 
 casper.start(url);
 
+casper.echo("Connecting server...");
+
 casper.then(function () {
-  this.echo(this.getCurrentUrl());
+  this.echo("Connected! Current Url = " + this.getCurrentUrl());
 
   if (this.exists("div.comic_info h1.fl")) {
     this.echo(this.fetchText("div.comic_info h1.fl").trim());
@@ -42,12 +53,19 @@ casper.then(function () {
       this.echo("Chapter Name: " + this.fetchText("#current_chapter_name"));
 
       if (this.exists("#image_trigger")) {
-        this.echo("can click!");
+        var regex = /\/(\d+)/g;
+        var pageCount = parseInt(regex.exec(this.fetchText(".pagenum"))[1]);
+        
+        this.echo("Total Pages: " + pageCount);
 
         if (this.exists("img[id^='cur_img_']")) {
-          this.echo("can download!");
+          this.echo("Start downloading...");
+
+          pages = this.evaluate(findInitialPages);
+
+          this.echo(' - ' + pages.join('\n - '));
         } else {
-          this.echo("can NOT download!");
+          this.echo("Can NOT download!");
         }
       } else {
         this.echo("Image Clicking Error!");
