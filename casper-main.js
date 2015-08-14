@@ -1,12 +1,30 @@
 var casper = require ("casper").create({
-  clientScripts:  [
-    'include/jquery.js'
-  ],
+  // clientScripts:  [
+  //   'include/jquery-2.1.3.min.js'
+  // ],
   pageSettings: {
     loadImages:  false,
     loadPlugins: false
   },
   verbose: true
+});
+
+casper.on('complete.error', function(err) {
+    this.die("Complete callback has failed: " + err);
+});
+
+casper.on('error', function(msg, trace) {
+    this.die("Caught in Error: " + msg + "\n" + err);
+});
+
+casper.on('resource.error', function(resErr) {
+    this.die("Resource Error: " + resErr.errorString + "\nResource Url: " + resErr.url);
+});
+
+casper.on('resource.received', function(resource) {
+  if (resource.url.indexOf(".html") != -1) {
+    this.echo("Resource Received: " + resource.url);
+  }
 });
 
 var comicNumber = 13707;
@@ -15,12 +33,8 @@ var url = "http://www.u17.com/comic/" + comicNumber + ".html";
 var chapters = [];
 var pages = [];
 
-function endsWith(str, suffix) {
-  return str.indexOf(suffix, str.length - suffix.length) !== -1;
-}
-
 function findChapters() {
-  var links = $('div.chapterlist_box li a');
+  var links = document.querySelectorAll('div.chapterlist_box li a');
 
   return Array.prototype.map.call(links, function(e) {
       return e.getAttribute("href");
@@ -28,27 +42,28 @@ function findChapters() {
 }
 
 function findInitialPages() {
-  var links = $("img[id^='cur_img_']");
+  var links = document.querySelectorAll("img[id^='cur_img_']");
 
   return Array.prototype.map.call(links, function(e) {
       return e.getAttribute("data-src");
   });
 }
 
-casper.on('resource.received', function(resource) {
-  if (resource.contentType && resource.contentType.indexOf("image/webp") > -1) {
-    casper.echo("Type = " + resource.contentType + "\nUrl = " + resource.url + "\n\n");
-  }
-});
+function findSuccPages() {
+  var links = document.querySelectorAll("img[id^='cur_img_']");
+
+  return links[links.length - 1].getAttribute("data-src");
+}
 
 casper.start(url);
 
 casper.then(function () {
-  this.echo("Connected! Current Url = " + this.getCurrentUrl());
+  console.log("Connected! Current Url = " + this.getCurrentUrl());
 
   if (this.exists("div.comic_info h1.fl")) {
     this.echo(this.fetchText("div.comic_info h1.fl").trim());
-    chapters = this.evaluate(findChapters).slice(0, 3);
+    chapters = this.evaluate(findChapters);
+    console.log("Found " + chapters.length + " chapters in total.");
   } else {
     this.echo("Comic " + comicNumber + " not found!");
   }
@@ -56,41 +71,56 @@ casper.then(function () {
 
 casper.then(function () {
   this.each(chapters, function (self, chapter) {
+    // for each chapter, open the chapter to view the pages
     self.thenOpen(chapter, function () {
       var chapterName = this.fetchText("#current_chapter_name");
 
-      this.echo("Now processing " + this.getCurrentUrl());
-      this.echo("Chapter Name: " + chapterName);
+      console.log("Now processing " + this.getCurrentUrl());
+      console.log("Chapter Name: " + chapterName);
 
-      if (this.exists("#image_trigger")) {
-        var regex = /\/(\d+)/g;
-        var pageCount = parseInt(regex.exec(this.fetchText(".pagenum"))[1]);
-        
-        this.echo("Total Pages: " + pageCount);
+      // get the page number
+      var regex = /\/(\d+)/g;
+      var pageCount = parseInt(regex.exec(this.fetchText(".pagenum"))[1]);
+      
+      console.log("Total Pages: " + pageCount);
+      console.log("Start downloading...");
 
-        if (this.exists("img[id^='cur_img_']")) {
-          this.echo("Start downloading...");
+      this.then(function () {
+        // get the initial pages
+        pages = this.evaluate(findInitialPages);
 
-          pages = this.evaluate(findInitialPages);
-          var counter = 1;
+        console.log(' - ' + pages.join('\n - '));
+      });
 
-          this.each(pages, function (self, page) {
-            self.echo("Downloading " + page);
-            self.thenOpen("http://localhost:8080", {
-              method: "post",
-              data: {
-                "chapter": chapterName,
-                "page": counter++,
-                "url": page
-              }
-            });
+      this.then(function () {
+        this.repeat(pageCount - 3, function () {
+          this.thenClick("#image_trigger");
+
+          this.then(function () {
+            var next = this.evaluate(findSuccPages);
+            pages.push(next);
+            console.log(" - " + next);
           });
-        } else {
-          this.echo("Can NOT download!");
-        }
-      } else {
-        this.echo("Image Clicking Error!");
-      }
+        });
+      });
+
+      var counter = 1;
+
+      // send the pages url to node server, and download the pics there
+      this.then(function () {
+        this.each(pages, function (self, page) {
+          console.log("Downloading " + page);
+
+          self.thenOpen("http://localhost:8080", {
+            method: "post",
+            data: {
+              "chapter": chapterName,
+              "page": counter++,
+              "url": page
+            }
+          });
+        });
+      });
     })
   });
 });
