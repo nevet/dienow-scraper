@@ -11,7 +11,7 @@
     "name": "nevet",
     "email": "nevets.st@gmail.com"
   },
-  "main": "server.js",
+  "main": "parse.js",
   "keywords": [
     "U17_Comic",
     "Scraper",

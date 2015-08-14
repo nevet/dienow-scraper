@@ -1,13 +1,13 @@
 var casper = require ("casper").create({
-  // clientScripts:  [
-  //   'include/jquery-2.1.3.min.js'
-  // ],
   pageSettings: {
     loadImages:  false,
     loadPlugins: false
   },
   verbose: true
 });
+var fs = require("fs");
+
+var fileName = "./urls.txt";
 
 casper.on('complete.error', function(err) {
     this.die("Complete callback has failed: " + err);
@@ -20,12 +20,6 @@ casper.on('error', function(msg, trace) {
 casper.on('resource.error', function(resErr) {
     this.die("Resource Error: " + resErr.errorString + "\nResource Url: " + resErr.url);
 });
-
-// casper.on('resource.received', function(resource) {
-//   if (resource.url.indexOf(".html") != -1) {
-//     this.echo("Resource Received: " + resource.url);
-//   }
-// });
 
 var comicNumber = 13707;
 var url = "http://www.u17.com/comic/" + comicNumber + ".html";
@@ -47,10 +41,6 @@ function findInitialPages() {
   return Array.prototype.map.call(links, function(e) {
       return e.getAttribute("data-src");
   });
-}
-
-function findSuccPages() {
-  
 }
 
 casper.start(url);
@@ -75,6 +65,7 @@ casper.then(function () {
 
       console.log("Now processing " + this.getCurrentUrl());
       console.log("Chapter Name: " + chapterName);
+      fs.write(fileName, chapterName + "\n", 'a');
 
       // get the page number
       var regex = /\/(\d+)/g;
@@ -86,26 +77,8 @@ casper.then(function () {
       // get the initial pages
       pages = this.evaluate(findInitialPages);
 
-      console.log(" - " + pages.join("\n - "));
-
-      var counter = 1;
-
-      this.then(function () {
-        this.each(pages, function (self, page) {
-          console.log("Downloading " + page);
-
-          self.thenOpen("http://localhost:8080", {
-            method: "post",
-            data: {
-              "chapter": chapterName,
-              "page": counter++,
-              "url": page
-            }
-          });
-        });
-      });
-
-      this.back();
+      fs.write(fileName, pages.join("\n") + "\n", 'a');
+      console.log(pages.join("\n"));
 
       this.then(function () {
         this.repeat(pageCount - 3, function () {
@@ -117,18 +90,8 @@ casper.then(function () {
               return links[links.length - 1].getAttribute("data-src");
             });
 
-            console.log(" - " + next);
-
-            this.thenOpen("http://localhost:8080", {
-              method: "post",
-              data: {
-                "chapter": chapterName,
-                "page": counter++,
-                "url": next
-              }
-            });
-
-            this.back();
+            fs.write(fileName, next + "\n", 'a');
+            console.log(next);
           });
         });
       });
@@ -137,6 +100,5 @@ casper.then(function () {
 });
 
 casper.run(function () {
-  this.echo(chapters.length + ' chapters found:');
-  this.echo(' - ' + chapters.join('\n - ')).exit();
+  this.echo('done').exit();
 });
