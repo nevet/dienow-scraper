@@ -20,7 +20,7 @@ brew install casperjs
 brew install node
 ```
 
-# V1
+# V1 (NOT Recommend)
 In this version, all urls that crawled using `CasperJS` will be `POST` to a node server immediately after it's been crawled, and the server will handle the download asynchronously.
 
 To run the app, navigate to your project folder, and install node dependencies first:
@@ -37,7 +37,7 @@ You should see `Server is Running!` if you ran correctly. The final step is to s
 
 The comic will be downloaded to `project_folder/dienow/chapter_name/page.jpg`.
 
-# V2
+# V2 (Preferred)
 In this version, all urls that crawled using `CasperJS` will be written into a file, then a `NodeJS` based app will download the comic based on the urls.
 
 To run the app, navigate to your project folder, and install node dependencies first:
