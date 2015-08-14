@@ -14,18 +14,18 @@ casper.on('complete.error', function(err) {
 });
 
 casper.on('error', function(msg, trace) {
-    this.die("Caught in Error: " + msg + "\n" + err);
+    this.die("Caught in Error: " + msg + "\n" + trace.toString());
 });
 
 casper.on('resource.error', function(resErr) {
     this.die("Resource Error: " + resErr.errorString + "\nResource Url: " + resErr.url);
 });
 
-casper.on('resource.received', function(resource) {
-  if (resource.url.indexOf(".html") != -1) {
-    this.echo("Resource Received: " + resource.url);
-  }
-});
+// casper.on('resource.received', function(resource) {
+//   if (resource.url.indexOf(".html") != -1) {
+//     this.echo("Resource Received: " + resource.url);
+//   }
+// });
 
 var comicNumber = 13707;
 var url = "http://www.u17.com/comic/" + comicNumber + ".html";
@@ -50,9 +50,7 @@ function findInitialPages() {
 }
 
 function findSuccPages() {
-  var links = document.querySelectorAll("img[id^='cur_img_']");
-
-  return links[links.length - 1].getAttribute("data-src");
+  
 }
 
 casper.start(url);
@@ -85,28 +83,13 @@ casper.then(function () {
       console.log("Total Pages: " + pageCount);
       console.log("Start downloading...");
 
-      this.then(function () {
-        // get the initial pages
-        pages = this.evaluate(findInitialPages);
+      // get the initial pages
+      pages = this.evaluate(findInitialPages);
 
-        console.log(' - ' + pages.join('\n - '));
-      });
-
-      this.then(function () {
-        this.repeat(pageCount - 3, function () {
-          this.thenClick("#image_trigger");
-
-          this.then(function () {
-            var next = this.evaluate(findSuccPages);
-            pages.push(next);
-            console.log(" - " + next);
-          });
-        });
-      });
+      console.log(" - " + pages.join("\n - "));
 
       var counter = 1;
 
-      // send the pages url to node server, and download the pics there
       this.then(function () {
         this.each(pages, function (self, page) {
           console.log("Downloading " + page);
@@ -118,6 +101,34 @@ casper.then(function () {
               "page": counter++,
               "url": page
             }
+          });
+        });
+      });
+
+      this.back();
+
+      this.then(function () {
+        this.repeat(pageCount - 3, function () {
+          this.thenClick("#image_trigger");
+
+          this.then(function () {
+            var next = this.evaluate(function () {
+              var links = document.querySelectorAll("img[id^='cur_img_']");
+              return links[links.length - 1].getAttribute("data-src");
+            });
+
+            console.log(" - " + next);
+
+            this.thenOpen("http://localhost:8080", {
+              method: "post",
+              data: {
+                "chapter": chapterName,
+                "page": counter++,
+                "url": next
+              }
+            });
+
+            this.back();
           });
         });
       });
