@@ -52,6 +52,14 @@ After the scraping has been done, execute:
 
 `node parser.js`
 
+If you want to start the scraping from a specific chapter, execute:
+
+`node parser.js [chapter_number]`
+
+For example, if you want to start from chapter 103, execute:
+
+`node parser.js 103`
+
 The comic will be downloaded to `project_folder/dienow/chapter_name/page.jpg`.
 
 # Future Development
