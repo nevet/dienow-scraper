@@ -8,6 +8,8 @@ Directly using `Casper.download()` will cause an `XMLHttpRequest Exception 101`,
 
 There are 2 version of scraper boundles: `casper-main-v1.js + server.js`, and `casper-main-v2.js + parser.js`.
 
+Note: **This project is only tested on Mac OS X**.
+
 # Pre-Requisites Installation
 Regardless of the version, you need to get [`CasperJS`](http://docs.casperjs.org/en/latest/installation.html), [`PhantomJS`](http://phantomjs.org/download.html) and [`NodeJS`](https://nodejs.org/download/) installed.
 
