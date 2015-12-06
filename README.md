@@ -22,23 +22,6 @@ brew install casperjs
 brew install node
 ```
 
-# V1 (NOT Recommend)
-In this version, all urls that crawled using `CasperJS` will be `POST` to a node server immediately after it's been crawled, and the server will handle the download asynchronously.
-
-To run the app, navigate to your project folder, and install node dependencies first:
-
-`npm install`
-
-Next step is to start the node server:
-
-`node server.js`
-
-You should see `Server is Running!` if you ran correctly. The final step is to start the scraper:
-
-`casperjs casper-main-v1.js`
-
-The comic will be downloaded to `project_folder/dienow/chapter_name/page.jpg`.
-
 # V2 (Preferred)
 In this version, all urls that crawled using `CasperJS` will be written into a file, then a `NodeJS` based app will download the comic based on the urls.
 
@@ -61,6 +44,23 @@ If you want to start the scraping from a specific chapter, execute:
 For example, if you want to start from chapter 103, execute:
 
 `node parser.js 103`
+
+The comic will be downloaded to `project_folder/dienow/chapter_name/page.jpg`.
+
+# V1 (NOT Recommend)
+In this version, all urls that crawled using `CasperJS` will be `POST` to a node server immediately after it's been crawled, and the server will handle the download asynchronously.
+
+To run the app, navigate to your project folder, and install node dependencies first:
+
+`npm install`
+
+Next step is to start the node server:
+
+`node server.js`
+
+You should see `Server is Running!` if you ran correctly. The final step is to start the scraper:
+
+`casperjs casper-main-v1.js`
 
 The comic will be downloaded to `project_folder/dienow/chapter_name/page.jpg`.
 
