@@ -47,7 +47,7 @@ For example, if you want to start from chapter 103, execute:
 
 The comic will be downloaded to `project_folder/dienow/chapter_name/page.jpg`.
 
-# V1 (NOT Recommend)
+# V1 (NOT stable)
 In this version, all urls that crawled using `CasperJS` will be `POST` to a node server immediately after it's been crawled, and the server will handle the download asynchronously.
 
 To run the app, navigate to your project folder, and install node dependencies first:
@@ -63,6 +63,8 @@ You should see `Server is Running!` if you ran correctly. The final step is to s
 `casperjs casper-main-v1.js`
 
 The comic will be downloaded to `project_folder/dienow/chapter_name/page.jpg`.
+
+Note: This version is not very stable, the message pipe breaks quite often. I will improve it soon :)
 
 # Future Development
 1. Write scripts to automate V2;
