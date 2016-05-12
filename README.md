@@ -72,3 +72,6 @@ Note: This version is not very stable, the message pipe breaks quite often. I wi
 3. Generalize the code, so that user could donwload any comics from `u17.com`.
 
 Please fork and send me PR if you want to help me solve these three issues :)
+
+# Disclaimer
+This tool, and the images crawled from U17.com by this tool, should not be used in any commercial usage. Images used in any scenarios must be credited to the orignal plateform, a.k.a U17.com, and the original author of the comics.
